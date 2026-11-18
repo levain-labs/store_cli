@@ -1,0 +1,18 @@
+# 静的解析の設定。artiapp-label の analysis_options_shared.yaml と同じ厳しさにそろえる。
+include: package:lints/recommended.yaml
+
+analyzer:
+  language:
+    # 暗黙のダウンキャスト・推論失敗・生の型を許さない。
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+
+linter:
+  rules:
+    # 相対importは使わない。
+    - always_use_package_imports
+    - prefer_single_quotes
+    - always_declare_return_types
+    # 投げっぱなしのFutureは必ず明示する(unawaited())。
+    - unawaited_futures

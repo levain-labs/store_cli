@@ -1,0 +1,4 @@
+# 開発とCI・リリースのビルドで使うDart SDK。版は完全固定し、Renovateで上げる。
+# pubspec.yaml の sdk 制約は「動く下限」で、実際に使う版はここで決まる。
+[tools]
+dart = "3.13.5"

@@ -1,0 +1,48 @@
+# PRとmainへのpushで、整形・静的解析・テストを回す。
+# シークレットには触れず、ストアのAPIも叩かない(ストアへの反映は利用者のターミナルでのみ行う)。
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: mise(mise.tomlのDartをインストール)
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          cache: true
+
+      - name: 依存の取得
+        run: dart pub get
+        shell: bash
+
+      - name: 整形の検査
+        run: dart format --output=none --set-exit-if-changed .
+        shell: bash
+
+      - name: 静的解析
+        run: dart analyze --fatal-infos
+        shell: bash
+
+      - name: テスト
+        run: dart test
+        shell: bash

@@ -1,0 +1,77 @@
+# タグ v<version> のpushで、macOS arm64 向けの実行ファイルを作って GitHub Release に置く。
+# 使う側は mise の github バックエンドで取得する(`"github:levain-labs/store_cli" = "<version>"`)。
+#
+# 利用者は自分のMacでしか実行しない(CIからストアへは反映しない)ため、macOS arm64 だけを作る。
+# アセット名の darwin-arm64 は、mise が OS とアーキテクチャを見分ける手がかりになる。
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: macos-15
+    timeout-minutes: 20
+    permissions:
+      # Release の作成とアセットの添付に要る。
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: mise(mise.tomlのDartをインストール)
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4.3.0
+        with:
+          cache: true
+
+      - name: タグと pubspec.yaml の version の一致を確かめる
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="$(sed -n 's/^version: *//p' pubspec.yaml)"
+          if [[ "${TAG}" != "v${version}" ]]; then
+            echo "::error::タグ ${TAG} と pubspec.yaml の version ${version} が一致しません"
+            exit 1
+          fi
+        shell: bash
+
+      - name: 依存の取得
+        run: dart pub get
+        shell: bash
+
+      - name: テスト
+        run: dart test
+        shell: bash
+
+      - name: 実行ファイルを作る
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          mkdir -p dist/bin
+          dart compile exe bin/store.dart -o dist/bin/store
+          ./dist/bin/store --help > /dev/null
+          tar -czf "dist/store_cli-${TAG}-darwin-arm64.tar.gz" -C dist/bin store
+          (cd dist && shasum -a 256 "store_cli-${TAG}-darwin-arm64.tar.gz" > "store_cli-${TAG}-darwin-arm64.tar.gz.sha256")
+        shell: bash
+
+      - name: GitHub Release を作る
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "${TAG}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --verify-tag \
+            --generate-notes \
+            "dist/store_cli-${TAG}-darwin-arm64.tar.gz" \
+            "dist/store_cli-${TAG}-darwin-arm64.tar.gz.sha256"
+        shell: bash

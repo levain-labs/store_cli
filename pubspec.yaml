@@ -1,0 +1,33 @@
+# ストア掲載情報・リリースノート・審査提出を Play Developer API / App Store Connect API で
+# 管理するローカル専用CLI。正本は使う側のリポジトリ直下の store/(アプリ固有の値は store/store.yaml)。
+# 配布は dart compile exe したバイナリを GitHub Releases に置き、使う側は mise で版を固定する。
+#
+# 依存はキャレット(^)を使わず完全固定する(本番のストアへ書き込むツールで、再現性を優先する)。
+# 更新は Renovate 経由で明示的に行う。
+name: store_cli
+description: ストア掲載情報CLI(Play / App Store Connect)。アプリ固有の値は store/store.yaml
+publish_to: none
+# リリースのタグ(v<version>)と一致させる。release.yaml が照合する。
+version: 1.0.0
+
+# 「動く下限」を書く場所。実際に使う版は mise.toml の dart で固定する。
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  # サブコマンド(play / asc × pull / push / submit)とフラグの解釈。
+  args: 2.7.0
+  # App Store Connect のスクリーンショット確定時に送るMD5、Playの画像比較のSHA-256。
+  crypto: 3.0.7
+  # App Store Connect API の ES256 JWT。.p8(PKCS#8 PEM)をそのまま読める。
+  dart_jsonwebtoken: 3.4.1
+  # Play Developer API v3 の型付きクライアント(Google公式の自動生成)。
+  googleapis: 17.0.0
+  # Bearerトークンを付ける http.Client と App Store Connect API の呼び出し。
+  http: 1.6.0
+  # store/store.yaml(アプリ固有の値)の読み取り。tools/check と同じ版。
+  yaml: 3.1.4
+
+dev_dependencies:
+  lints: 6.1.0
+  test: 1.33.0
