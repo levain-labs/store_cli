@@ -18,7 +18,7 @@ dependencies:
   # サブコマンド(play / asc × pull / push / submit)とフラグの解釈。
   args: 2.7.0
   # App Store Connect のスクリーンショット確定時に送るMD5、Playの画像比較のSHA-256。
-  crypto: 3.0.7
+  crypto: 3.0.8
   # App Store Connect API の ES256 JWT。.p8(PKCS#8 PEM)をそのまま読める。
   dart_jsonwebtoken: 3.4.1
   # Play Developer API v3 の型付きクライアント(Google公式の自動生成)。
