@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   release:
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 20
     permissions:
       # Release の作成とアセットの添付に要る。
